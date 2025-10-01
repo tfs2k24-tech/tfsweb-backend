@@ -16,12 +16,25 @@ const app = express();
 app.use(express.json());
 
 // Allow both frontends
-app.use(
-  cors({
-    origin: ["https://techfusionstudios.netlify.app", "https://localhost:5174"],
-    credentials: true,
-  })
-);
+import cors from "cors";
+
+const allowedOrigins = [
+  "https://techfusionstudios.netlify.app",  // frontend deployed
+  "http://localhost:5174"                   // frontend dev
+];
+
+app.use(cors({
+  origin: function(origin, callback){
+    if(!origin) return callback(null, true); // allow non-browser requests
+    if(allowedOrigins.includes(origin)){
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
+
 
 // MongoDB connection
 mongoose
