@@ -16,12 +16,7 @@ const app = express();
 app.use(express.json());
 
 // Allow both frontends (removed trailing slashes)
-app.use(
-  cors({
-    origin: ["https://techfusionstudios.netlify.app", "https://localhost:5174"],
-    credentials: true,
-  })
-);
+
 
 // MongoDB connection
 mongoose
