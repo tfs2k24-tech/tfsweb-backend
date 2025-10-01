@@ -23,18 +23,25 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function(origin, callback) {
-    console.log("Request origin:", origin); // for debugging
+    // Debugging
+    console.log("Request origin:", origin);
+    
+    // Allow requests with no origin (e.g., Postman) or from allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn("Blocked by CORS:", origin);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true, // needed if you use cookies or auth
+  credentials: true, // allows cookies/auth headers
 }));
 
-// Handle preflight requests for PUT/POST/DELETE
-app.options("*", cors());
+// ✅ Handle preflight requests
+app.options("*", cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
 
 // ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
@@ -50,6 +57,11 @@ app.use("/api/queries", queryRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+
+// ✅ Root route for quick test
+app.get("/", (req, res) => {
+  res.send("Backend is running ✅");
+});
 
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
