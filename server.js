@@ -18,7 +18,7 @@ app.use(express.json());
 // Allow both frontends
 app.use(
   cors({
-    origin: ["https://techfusionstudios.netlify.app/", "https://localhost:5174"],
+    origin: ["https://techfusionstudios.netlify.app", "https://localhost:5174"],
     credentials: true,
   })
 );
