@@ -15,7 +15,7 @@ app.use(express.json());
 
 // 🔹 Add CORS middleware back and allow your frontend
 app.use(cors({
-  origin: " https://tfsweb-backend.onrender.com",
+  origin: "https://techfusionstudios.netlify.app",
   credentials: true,
 }));
 
