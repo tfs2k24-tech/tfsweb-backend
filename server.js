@@ -12,57 +12,45 @@ import testimonialRoutes from "./routes/test.js";
 dotenv.config();
 const app = express();
 
-// ✅ Middleware
 app.use(express.json());
 
-// ✅ CORS setup
+// Allowed origins
 const allowedOrigins = [
-  "https://techfusionstudios.netlify.app", // production frontend
-  "http://localhost:3000",                  // local dev
+  "https://techfusionstudios.netlify.app",
+  "http://localhost:3000"
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    // Debugging
-    console.log("Request origin:", origin);
-    
-    // Allow requests with no origin (e.g., Postman) or from allowed origins
+    // Allow requests from allowed origins or Postman/servers (no origin)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error(`CORS blocked for origin ${origin}`));
     }
   },
-  credentials: true, // allows cookies/auth headers
+  credentials: true,
 }));
 
-// ✅ Handle preflight requests
-app.options("*", cors({
-  origin: allowedOrigins,
-  credentials: true
-}));
+// Preflight requests
+app.options("*", cors({ origin: allowedOrigins, credentials: true }));
 
-// ✅ MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("MongoDB connection error:", err));
+  .catch(err => console.error(err));
 
-// ✅ Routes
+// Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/queries", queryRoutes);
 app.use("/api/team", teamRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 
-// ✅ Root route for quick test
-app.get("/", (req, res) => {
-  res.send("Backend is running ✅");
-});
+// Test endpoint
+app.get("/", (req, res) => res.send("Backend running ✅"));
 
-// ✅ Start server
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
+
