@@ -9,21 +9,20 @@ import project from "./routes/project.js";
 import testimonialRoutes from "./routes/test.js";
 
 dotenv.config();
-
 const app = express();
+
 app.use(express.json());
 
-// 🔹 Add CORS middleware back and allow your frontend
+// ✅ CORS middleware
 app.use(cors({
   origin: "https://techfusionstudios.netlify.app",
-  credentials: true,
+  credentials: true
 }));
 
 // MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error(err));
+  .catch(err => console.error(err));
 
 // Routes
 app.use("/api/admin", adminRoutes);
@@ -32,8 +31,6 @@ app.use("/api/team", teamRoutes);
 app.use("/api/projects", project);
 app.use("/api/testimonials", testimonialRoutes);
 
-// 🔹 For Render deployment, use HTTP/HTTPS automatically handled by Render
-const PORT = process.env.PORT || 5500;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+// Render automatically handles HTTPS
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));
