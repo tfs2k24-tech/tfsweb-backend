@@ -16,26 +16,28 @@ const app = express();
 // ✅ Middleware
 app.use(express.json());
 
-// ✅ Enhanced CORS setup
+// ✅ CORS setup for Netlify frontends only
 const allowedOrigins = [
   "https://techfusionstudios.netlify.app",
-  "https://tfsadminpanel.netlify.app/",
-  "http://localhost:5174",
-  "http://localhost:5173", // Vite default port
-  "http://localhost:3000"  // Create React App default
+  "https://tfsadminpanel.netlify.app"
 ];
 
 app.use(cors({
-  origin: allowedOrigins, // pass array directly
+  origin: function (origin, callback) {
+    // allow requests with no origin (like Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-
-
-
-// ✅ MongoDB connection with better error handling
+// ✅ MongoDB connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -64,10 +66,10 @@ app.get("/health", (req, res) => {
 
 // ✅ Global error handler for CORS
 app.use((err, req, res, next) => {
-  if (err.message === "Not allowed by CORS") {
+  if (err.message && err.message.startsWith("The CORS policy")) {
     return res.status(403).json({
-      error: "CORS policy blocked this request",
-      allowedOrigins: allowedOrigins
+      error: err.message,
+      allowedOrigins
     });
   }
   next(err);
