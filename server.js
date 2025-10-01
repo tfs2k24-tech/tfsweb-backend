@@ -48,7 +48,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // ✅ Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/queries", queryRoutes);
-app.use("/api/team", teamRoutes);
+app.use("/api/teams", teamRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 
