@@ -19,6 +19,7 @@ app.use(express.json());
 // ✅ Enhanced CORS setup
 const allowedOrigins = [
   "https://techfusionstudios.netlify.app",
+  "https://tfsadminpanel.netlify.app/",
   "http://localhost:5174",
   "http://localhost:5173", // Vite default port
   "http://localhost:3000"  // Create React App default
