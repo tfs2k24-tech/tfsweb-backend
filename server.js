@@ -16,31 +16,44 @@ const app = express();
 // ✅ Middleware
 app.use(express.json());
 
-// ✅ CORS setup
+// ✅ Enhanced CORS setup
 const allowedOrigins = [
-  "https://techfusionstudios.netlify.app", // frontend deployed
-  "http://localhost:5174"                  // frontend dev
+  "https://techfusionstudios.netlify.app",
+  "http://localhost:5174",
+  "http://localhost:5173", // Vite default port
+  "http://localhost:3000"  // Create React App default
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    if(!origin) return callback(null, true); // allow non-browser requests like Postman
-    if(allowedOrigins.includes(origin)) {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`🚫 CORS blocked for origin: ${origin}`);
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// ✅ MongoDB connection
+// ✅ Handle preflight requests globally
+app.options('*', cors());
+
+// ✅ MongoDB connection with better error handling
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
 })
 .then(() => console.log("✅ MongoDB connected"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
+.catch(err => {
+  console.error("❌ MongoDB connection error:", err);
+  process.exit(1);
+});
 
 // ✅ Routes
 app.use("/api/admin", adminRoutes);
@@ -49,8 +62,34 @@ app.use("/api/team", teamRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 
-// ✅ Start server (Render automatically handles HTTPS)
+// ✅ Health check endpoint
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "OK", 
+    message: "Server is running",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ✅ Global error handler for CORS
+app.use((err, req, res, next) => {
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({
+      error: "CORS policy blocked this request",
+      allowedOrigins: allowedOrigins
+    });
+  }
+  next(err);
+});
+
+// ✅ 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
+});
+
+// ✅ Start server
 const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Allowed origins: ${allowedOrigins.join(', ')}`);
 });
