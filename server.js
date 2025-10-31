@@ -19,7 +19,8 @@ app.use(express.json());
 // ✅ CORS setup for Netlify frontends only
 const allowedOrigins = [
   "https://techfusionstudios.netlify.app",
-  "https://tfsadminpanel.netlify.app"
+  "https://tfsadminpanel.netlify.app",
+  "https://localhost:5173"
 ];
 
 app.use(cors({
